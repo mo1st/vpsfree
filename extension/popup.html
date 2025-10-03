@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Biz Contact Scraper</title>
+  <style>
+    body {
+      width: 500px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 16px;
+      font-size: 14px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      color: #333;
+    }
+
+    .section {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #45a049;
+    }
+
+    .btn-primary:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #da190b;
+    }
+
+    .btn-export {
+      background-color: #2196F3;
+      color: white;
+    }
+
+    .btn-export:hover {
+      background-color: #0b7dda;
+    }
+
+    .status {
+      padding: 12px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .status-item {
+      margin-bottom: 4px;
+    }
+
+    .status-item strong {
+      color: #333;
+    }
+
+    .domain-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 8px;
+      background-color: #fafafa;
+    }
+
+    .domain-item {
+      padding: 6px;
+      margin-bottom: 4px;
+      background-color: white;
+      border-radius: 3px;
+      border-left: 3px solid #ccc;
+    }
+
+    .domain-item.pending {
+      border-left-color: #FFC107;
+    }
+
+    .domain-item.processing {
+      border-left-color: #2196F3;
+    }
+
+    .domain-item.finished {
+      border-left-color: #4CAF50;
+    }
+
+    .domain-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .domain-emails {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .domain-error {
+      font-size: 12px;
+      color: #f44336;
+      margin-top: 2px;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .settings-group {
+      margin-bottom: 12px;
+    }
+
+    .inline-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-section {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Biz Contact Scraper</h1>
+
+  <div class="section">
+    <label for="urls">URLs to Scrape (one per line):</label>
+    <textarea id="urls" placeholder="https://www.bing.com/...&#10;https://example.com&#10;..."></textarea>
+    <div class="help-text">Paste Bing search result URLs or direct website URLs. Bing redirects will be automatically normalized.</div>
+  </div>
+
+  <div class="section">
+    <div class="settings-group">
+      <label>
+        <input type="checkbox" id="stopAfterFirstEmail">
+        Stop after finding first email on a domain
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <label for="maxExtraPages">Max extra pages to check per domain:</label>
+      <input type="number" id="maxExtraPages" min="0" max="10" value="3">
+      <div class="help-text">How many About/Contact/etc. pages to check per domain</div>
+    </div>
+
+    <div class="settings-group">
+      <label for="maxConcurrentTabs">Max concurrent tabs:</label>
+      <input type="number" id="maxConcurrentTabs" min="1" max="3" value="1">
+      <div class="help-text">Process 1-3 domains simultaneously (higher = faster but more resource intensive)</div>
+    </div>
+  </div>
+
+  <div class="section settings-section">
+    <h3 style="font-size: 14px; margin: 0 0 8px 0;">Keyword Settings</h3>
+    
+    <div class="settings-group">
+      <label for="aboutKeywords">About keywords (comma-separated):</label>
+      <input type="text" id="aboutKeywords" placeholder="about, about-us, our story">
+    </div>
+
+    <div class="settings-group">
+      <label for="contactKeywords">Contact keywords (comma-separated):</label>
+      <input type="text" id="contactKeywords" placeholder="contact, contact-us, get in touch">
+    </div>
+
+    <div class="settings-group">
+      <label for="otherKeywords">Other keywords (comma-separated):</label>
+      <input type="text" id="otherKeywords" placeholder="team, staff, people">
+    </div>
+
+    <div class="settings-group">
+      <label for="customKeywords">Custom keywords (comma-separated):</label>
+      <input type="text" id="customKeywords" placeholder="leadership, careers">
+    </div>
+  </div>
+
+  <div class="section">
+    <button id="startBtn" class="btn-primary">Start Scraping</button>
+    <button id="stopBtn" class="btn-secondary" style="display: none;">Stop</button>
+    <button id="exportBtn" class="btn-export">Export Results</button>
+  </div>
+
+  <div class="status" id="statusPanel" style="display: none;">
+    <div class="status-item">
+      <strong>Status:</strong> <span id="statusActive">Idle</span>
+    </div>
+    <div class="status-item">
+      <strong>Queue:</strong> <span id="statusQueue">0</span> domains
+    </div>
+    <div class="status-item">
+      <strong>Active:</strong> <span id="statusActiveCount">0</span> tabs
+    </div>
+  </div>
+
+  <div id="resultsPanel" style="display: none;">
+    <h3 style="font-size: 14px; margin: 16px 0 8px 0;">Results</h3>
+    <div class="domain-list" id="domainList"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
